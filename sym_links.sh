@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MSG_USAGE="Usage: $0 [-a] [-b arg] [-h]"
+MSG_USAGE="Usage: $0 [-p arg] [-P arg] [-s arg] [-S arg]"
 MSG_p="Location of the node in the config.xml file where the paths to source header files are stored."
 MSG_P="Destination directory within the project where symbolic links to header files mentioned in the config.xml files are meant to be created."
 MSG_s="Location of the node in the config.xml file where the paths to source SO files are stored."
@@ -45,7 +45,7 @@ do
             ;;
 
         -h | --help)
-            echo "Usage: $0 [-p arg] [-P arg] [-s arg] [-S arg]"
+            echo ${MSG_USAGE}
             echo -e "-p --header_prefix\t${MSG_p}"
             echo -e "-P --header_dest\t${MSG_P}"
             echo -e "-s --so_prefix\t\t${MSG_s}"
