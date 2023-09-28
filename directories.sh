@@ -1,14 +1,20 @@
 #!/bin/bash
 
 PATH_DIR_LIST="Temp/directory_list.txt"
-DIRS_NODE="config/Directories/"
 
-MSG_USAGE="Usage: $0 [-c] [-h]"
 MSG_c="Location of the xml file which contains the directory structure of the project."
 MSG_d="Node of the xml file that describes the target directory structure."
+MSG_USAGE="Usage: $0 [-c] [-h]\r\n\
+\t-c --c --config_file\t${MSG_c}\r\n\
+\t-d --dirs_node\t\t${MSG_d}"
 
-OPTS_SHORT="c:h"
-OPTS_LONG="config_file:,help"
+OPTS_SHORT="c:d:h"
+OPTS_LONG="config_file:,dirs_node:,help"
+
+if [ $# -eq 0 ]; then
+    echo -e ${MSG_USAGE}
+    exit 1
+fi
 
 OPTS=$(getopt --options $OPTS_SHORT --longoptions $OPTS_LONG -- "$@")
 
@@ -18,7 +24,7 @@ while :
 do
     case "$1" in
         -c | --config_file)
-            PATH_CONFIG="$2"
+            CONFIG_FILE="$2"
             shift 2
             ;;
 
@@ -28,9 +34,7 @@ do
             ;;
 
         -h | --help)
-            echo "Usage: $0 [-c arg]"
-            echo -e "-c --path_config\t${MSG_c}"
-            echo -e "-d --dirs_node\t\t${MSG_d}"
+            echo -e ${MSG_USAGE}
             exit 0
             ;;
 
@@ -45,7 +49,7 @@ do
     esac
 done
 
-list=("PATH_DIR_LIST" "DIRS_NODE")
+list=("CONFIG_FILE" "DIRS_NODE")
 
 for var in "${list[@]}"
 do
@@ -62,7 +66,7 @@ if [ ! -d Temp ]; then
     mkdir Temp
 fi
 
-xmlstarlet el $PATH_CONFIG | grep $DIRS_NODE >> $PATH_DIR_LIST
+xmlstarlet el $CONFIG_FILE | grep $DIRS_NODE >> $PATH_DIR_LIST
 
 echo "********************"
 echo "Creating directories"
