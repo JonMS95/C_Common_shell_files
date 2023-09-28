@@ -1,16 +1,17 @@
 #!/bin/bash
 
+MSG_c="Location of the xml file which contains the dependency structure of the project."
 MSG_p="Location of the node in the config.xml file where the paths to source header files are stored."
 MSG_P="Destination directory within the project where symbolic links to header files mentioned in the config.xml files are meant to be created."
 MSG_s="Location of the node in the config.xml file where the paths to source SO files are stored."
 MSG_S="Destination directory within the project where symbolic links to SO mentioned in the config.xml files are meant to be created."
-MSG_USAGE="Usage: $0 [-p arg] [-P arg] [-s arg] [-S arg]\r\n\
+MSG_USAGE="Usage: $0 [-c arg] [-p arg] [-P arg] [-s arg] [-S arg]\r\n\
+\t-p --config_file\t${MSG_c}\r\n\
 \t-p --header_prefix\t${MSG_p}\r\n\
 \t-P --header_dest\t${MSG_P}\r\n\
 \t-s --so_prefix\t\t${MSG_s}\r\n\
 \t-S --so_dest\t\t${MSG_S}"
 
-PATH_CONFIG="config.xml"
 PATH_DEPS_LIST="Temp/temp.txt"
 
 # HEADER_PREFIX=
@@ -18,8 +19,8 @@ PATH_DEPS_LIST="Temp/temp.txt"
 # HEADER_DEST=
 # SO_DEST=
 
-OPTS_SHORT="p:P:s:S:h"
-OPTS_LONG="header_prefix:,header_dest:,so_prefix:,so_dest:,help"
+OPTS_SHORT="c:p:P:s:S:h"
+OPTS_LONG="config_file:,header_prefix:,header_dest:,so_prefix:,so_dest:,help"
 
 if [ $# -eq 0 ]; then
     echo -e ${MSG_USAGE}
@@ -33,6 +34,11 @@ eval set -- "$OPTS"
 while :
 do
     case "$1" in
+        -c | --config_file)
+            CONFIG_FILE="$2"
+            shift 2
+            ;;
+
         -p | --header_prefix)
             HEADER_PREFIX="$2"
             shift 2
@@ -69,7 +75,7 @@ do
     esac
 done
 
-list=("HEADER_PREFIX" "HEADER_DEST" "SO_PREFIX" "SO_DEST")
+list=("CONFIG_FILE" "HEADER_PREFIX" "HEADER_DEST" "SO_PREFIX" "SO_DEST")
 
 for var in "${list[@]}"
 do
@@ -82,7 +88,7 @@ do
     fi
 done
 
-# $1: $PATH_CONFIG
+# $1: $CONFIG_FILE
 # $2: $FILE_PREFIX
 # $3: $ORG_LOCATIONS_LIST
 # $4: $SYM_LINK_DEST
@@ -109,8 +115,8 @@ fi
 echo "***********************"
 echo "Creating symbolic links"
 echo "***********************"
-CreateSymLinks $PATH_CONFIG $HEADER_PREFIX $PATH_DEPS_LIST $HEADER_DEST
-CreateSymLinks $PATH_CONFIG $SO_PREFIX $PATH_DEPS_LIST $SO_DEST
+CreateSymLinks $CONFIG_FILE $HEADER_PREFIX $PATH_DEPS_LIST $HEADER_DEST
+CreateSymLinks $CONFIG_FILE $SO_PREFIX $PATH_DEPS_LIST $SO_DEST
 
 # Delete temporary files directory if it still exists.
 if [ -d Temp ]; then
