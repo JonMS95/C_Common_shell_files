@@ -1,10 +1,14 @@
 #!/bin/bash
 
-MSG_USAGE="Usage: $0 [-p arg] [-P arg] [-s arg] [-S arg]"
 MSG_p="Location of the node in the config.xml file where the paths to source header files are stored."
 MSG_P="Destination directory within the project where symbolic links to header files mentioned in the config.xml files are meant to be created."
 MSG_s="Location of the node in the config.xml file where the paths to source SO files are stored."
 MSG_S="Destination directory within the project where symbolic links to SO mentioned in the config.xml files are meant to be created."
+MSG_USAGE="Usage: $0 [-p arg] [-P arg] [-s arg] [-S arg]\r\n\
+\t-p --header_prefix\t${MSG_p}\r\n\
+\t-P --header_dest\t${MSG_P}\r\n\
+\t-s --so_prefix\t\t${MSG_s}\r\n\
+\t-S --so_dest\t\t${MSG_S}"
 
 PATH_CONFIG="config.xml"
 PATH_DEPS_LIST="Temp/temp.txt"
@@ -16,6 +20,11 @@ PATH_DEPS_LIST="Temp/temp.txt"
 
 OPTS_SHORT="p:P:s:S:h"
 OPTS_LONG="header_prefix:,header_dest:,so_prefix:,so_dest:,help"
+
+if [ $# -eq 0 ]; then
+    echo -e ${MSG_USAGE}
+    exit 1
+fi
 
 OPTS=$(getopt --options $OPTS_SHORT --longoptions $OPTS_LONG -- "$@")
 
@@ -45,11 +54,7 @@ do
             ;;
 
         -h | --help)
-            echo ${MSG_USAGE}
-            echo -e "-p --header_prefix\t${MSG_p}"
-            echo -e "-P --header_dest\t${MSG_P}"
-            echo -e "-s --so_prefix\t\t${MSG_s}"
-            echo -e "-S --so_dest\t\t${MSG_S}"
+            echo -e ${MSG_USAGE}
             exit 0
             ;;
 
