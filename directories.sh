@@ -10,8 +10,9 @@ MSG_c="Location of the xml file which contains the directory structure of the pr
 MSG_d="Node of the xml file that describes the target directory structure."
 MSG_USAGE="Usage: $0 [-c] [-h]\r\n\
 \t-c --c --config_file\t${MSG_c}\r\n\
-\t-d --dirs_node\t\t${MSG_d}"
-MSG_UNEXPECTED_OPT="Unexpected option has been provided: $1"
+\t-d --dirs_node\t\t${MSG_d}\
+Example: $0 -c config.xml -d config/Directories/"
+MSG_OPT_ERROR="An error ocurred while parsing option: $1"
 #######################################################################################
 
 ########################################################################################
@@ -38,13 +39,19 @@ OPT_VALUES["DIRS_NODE"]="config/Directories/"
 #################################################################################
 
 #########################################################################
-# Parse input arguments passed to the current file.
+# Brief: Parse input arguments passed to the current file.
 # Returns: 1 if an unexpected option or -h (help) was found, 0 otherwise.
 #########################################################################
 ParseOptions()
 {
     # Retrieve provided option values.
     OPTS=$(getopt --options $OPTS_SHORT --longoptions $OPTS_LONG -- "$@")
+
+    if [ $? -eq 1 ]
+    then
+        echo "${MSG_OPT_ERROR}"
+        exit 1
+    fi
 
     eval set -- "$OPTS"
 
@@ -66,12 +73,13 @@ ParseOptions()
                 exit 1
                 ;;
 
-            --) shift; 
+            --) 
+                shift
                 break 
                 ;;
             
             *)
-                echo "$MSG_UNEXPECTED_OPT"
+                echo "${MSG_OPT_ERROR}"
                 exit 1
                 ;;
         esac
@@ -79,7 +87,7 @@ ParseOptions()
 }
 
 ################################################################################
-# Check whether or not every option has an associated value.
+# Brief: Check whether or not every option has an associated value.
 # $1: OPT_VALUES
 # Returns: 1 if any of the input arguments has no associated value, 0 otherwise.
 ################################################################################
@@ -111,21 +119,25 @@ GenerateDirectories()
     local dirs_node="$2"
     local dirs_list="$3"
 
+    # Check if configuration file exists.
     if [ ! -e $config_file ]
     then
         echo "Config file $config_file could not be found."
         exit 1
     fi
 
-    # Generate directories.
+    # Generate temporary directory which stores a file thatincludes the list
+    # of directories to generate.
     if [ ! -d Temp ]; then
         mkdir Temp
     fi
 
+    # Get the list of directories to generate from configuration xml file.
     xmlstarlet el $config_file | grep $dirs_node >> $PATH_DIR_LIST
 
     echo -e ${MSG_CREATING_DIRS}
 
+    # Read temporary file in order to know the paths of directories to create.
     while read -r line
     do
         new_dir=${line/#$dirs_node}
@@ -138,6 +150,7 @@ GenerateDirectories()
         fi
     done < $PATH_DIR_LIST
 
+    # Delete temporary files directory if it still exists.
     if [ -d Temp ]; then
         rm -rf Temp
     fi
@@ -147,7 +160,7 @@ GenerateDirectories()
 # Main
 ##########################################################################################
 if [ $# -eq 0 ]; then echo  ${MSG_NO_OPT}; fi
-ParseOptions
+ParseOptions $@
 if [ $? -eq 1 ];then exit 1; fi
 CheckOptionValues OPT_VALUES
 if [ $? -eq 1 ];then exit 1; fi
