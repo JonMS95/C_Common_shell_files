@@ -76,7 +76,7 @@ ParseOptions()
                 ;;
 
             -s | --so_prefix)
-                SO_OPT_VALUES["SO_PREFIX"]PREFIX="$2"
+                OPT_VALUES["SO_PREFIX"]="$2"
                 shift 2
                 ;;
 
@@ -178,8 +178,8 @@ ParseOptions $@
 if [ $? -eq 1 ];then exit 1; fi
 CheckOptionValues OPT_VALUES
 if [ $? -eq 1 ];then exit 1; fi
-CreateSymLinks $CONFIG_FILE $HEADER_PREFIX $PATH_DEPS_LIST $HEADER_DEST
+CreateSymLinks ${OPT_VALUES["CONFIG_FILE"]} ${OPT_VALUES["HEADER_PREFIX"]} $PATH_DEPS_LIST ${OPT_VALUES["HEADER_DEST"]}
 if [ $? -eq 1 ];then exit 1; fi
-CreateSymLinks $CONFIG_FILE $SO_PREFIX $PATH_DEPS_LIST $SO_DEST
+CreateSymLinks ${OPT_VALUES["CONFIG_FILE"]} ${OPT_VALUES["SO_PREFIX"]} $PATH_DEPS_LIST ${OPT_VALUES["SO_DEST"]}
 if [ $? -eq 1 ];then exit 1; fi
 ########################################################################
