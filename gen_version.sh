@@ -162,9 +162,7 @@ GenAPIVersion()
             version_suffix="_DEBUG"
         fi
 
-        # mkdir "${API_dir}/${version}${version_suffix}"
         mkdir -p ${API_dir}/${version}${version_suffix}/{Header_files,Dynamic_libraries}
-        # mkdir "${API_dir}/${version}${version_suffix}/Dynamic_libraries"
     fi
 }
 
