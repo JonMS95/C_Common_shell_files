@@ -1,23 +1,25 @@
 #!/bin/bash
-################################################################################################################################################
+
+###################################################################################################################################################
 # ParseOptions variables
 OPTS_SHORT="c:p:P:s:S:h"
 OPTS_LONG="config_file:,header_prefix:,header_dest:,so_prefix:,so_dest:,help"
 
 # ParseOptions variables
 MSG_c="Location of the xml file which contains the dependency structure of the project."
-MSG_p="Location of the node in the config.xml file where the paths to source header files are stored."
-MSG_P="Destination directory within the project where symbolic links to header files mentioned in the config.xml files are meant to be created."
-MSG_s="Location of the node in the config.xml file where the paths to source SO files are stored."
-MSG_S="Destination directory within the project where symbolic links to SO mentioned in the config.xml files are meant to be created."
+MSG_p="Location of the node in the configuration file where the paths to source header files are stored."
+MSG_P="Destination directory within the project where symbolic links to header files mentioned in the configuration files are meant to be created."
+MSG_s="Location of the node in the configuration file where the paths to source SO files are stored."
+MSG_S="Destination directory within the project where symbolic links to SO mentioned in the configuration files are meant to be created."
 MSG_USAGE="Usage: $0 [-c arg] [-p arg] [-P arg] [-s arg] [-S arg]\r\n\
-\t-p --config_file\t${MSG_c}\r\n\
+\t-c --config_file\t${MSG_c}\r\n\
 \t-p --header_prefix\t${MSG_p}\r\n\
 \t-P --header_dest\t${MSG_P}\r\n\
 \t-s --so_prefix\t\t${MSG_s}\r\n\
-\t-S --so_dest\t\t${MSG_S}"
+\t-S --so_dest\t\t${MSG_S}\r\n\r\n\
+Example: $0 -c config.xml -p config/API/Header_files -P API/Header_files -s config/API/Dynamic_libraries -S API/Dynamic_libraries"
 MSG_OPT_ERROR="Unexpected option has been provided: $1"
-################################################################################################################################################
+###################################################################################################################################################
 
 ################################################################################################
 # CreateSymLinks variables
@@ -26,6 +28,11 @@ PATH_DEPS_LIST="Temp/sym_links_list.txt"
 # CreateSymLinks messages
 MSG_CREATING_SYM_LINKS="********************\r\nCreating symbolic links\r\n********************"
 ################################################################################################
+
+#####################################################
+# Main messages.
+MSG_NO_OPT="No input parameters were provided for $0"
+#####################################################
 
 #################################################################################
 # Global variables
@@ -170,9 +177,9 @@ CreateSymLinks()
     fi
 }
 
-########################################################################
+#######################################################################################################################
 # Main
-########################################################################
+#######################################################################################################################
 if [ $# -eq 0 ]; then echo  ${MSG_NO_OPT}; fi
 ParseOptions $@
 if [ $? -eq 1 ];then exit 1; fi
@@ -182,4 +189,4 @@ CreateSymLinks ${OPT_VALUES["CONFIG_FILE"]} ${OPT_VALUES["HEADER_PREFIX"]} $PATH
 if [ $? -eq 1 ];then exit 1; fi
 CreateSymLinks ${OPT_VALUES["CONFIG_FILE"]} ${OPT_VALUES["SO_PREFIX"]} $PATH_DEPS_LIST ${OPT_VALUES["SO_DEST"]}
 if [ $? -eq 1 ];then exit 1; fi
-########################################################################
+#######################################################################################################################

@@ -10,7 +10,7 @@ MSG_c="Location of the xml file which contains the directory structure of the pr
 MSG_d="Node of the xml file that describes the target directory structure."
 MSG_USAGE="Usage: $0 [-c] [-h]\r\n\
 \t-c --c --config_file\t${MSG_c}\r\n\
-\t-d --dirs_node\t\t${MSG_d}\
+\t-d --dirs_node\t\t${MSG_d}\r\n\r\n\
 Example: $0 -c config.xml -d config/Directories/"
 MSG_OPT_ERROR="An error ocurred while parsing option: $1"
 #######################################################################################
