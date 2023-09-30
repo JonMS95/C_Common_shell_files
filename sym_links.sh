@@ -18,7 +18,7 @@ MSG_USAGE="Usage: $0 [-c arg] [-p arg] [-P arg] [-s arg] [-S arg]\r\n\
 \t-s --so_prefix\t\t${MSG_s}\r\n\
 \t-S --so_dest\t\t${MSG_S}\r\n\r\n\
 Example: $0 -c config.xml -p config/API/Header_files -P API/Header_files -s config/API/Dynamic_libraries -S API/Dynamic_libraries"
-MSG_OPT_ERROR="Unexpected option has been provided: $1"
+MSG_OPT_ERROR="An error ocurred while parsing option: $1"
 ###################################################################################################################################################
 
 ################################################################################################

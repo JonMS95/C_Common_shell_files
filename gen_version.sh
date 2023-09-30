@@ -16,7 +16,7 @@ MSG_USAGE="Usage: $0 [-c arg] [-v arg] [-m arg] [-a arg]\r\n\
 \t-m --mode_attr_path\t${MSG_m}\r\n\
 \t-a --api_dir_name\t${MSG_a}\r\n\r\n\
 Example: $0 -c config.xml -v \"config/@version\" -m \"config/@version_mode\" - a API"
-MSG_OPT_ERROR="Unexpected option has been provided: $1"
+MSG_OPT_ERROR="An error ocurred while parsing option: $1"
 ################################################################################################################################################
 
 #####################################################################################
