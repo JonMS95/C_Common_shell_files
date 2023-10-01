@@ -133,7 +133,7 @@ GenerateDirectories()
     fi
 
     # Get the list of directories to generate from configuration xml file.
-    xmlstarlet el $config_file | grep $dirs_node >> $PATH_DIR_LIST
+    xmlstarlet el $config_file | grep $dirs_node > $PATH_DIR_LIST
 
     echo -e ${MSG_CREATING_DIRS}
 
