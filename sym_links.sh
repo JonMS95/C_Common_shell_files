@@ -1,29 +1,24 @@
 #!/bin/bash
 
-###################################################################################################################################################
+######################################################################################################
 # ParseOptions variables
-OPTS_SHORT="c:p:P:s:S:h"
-OPTS_LONG="config_file:,header_prefix:,header_dest:,so_prefix:,so_dest:,help"
+OPTS_SHORT="c:d:h"
+OPTS_LONG="config_file:,deps_node:,help"
 
 # ParseOptions variables
 MSG_c="Location of the xml file which contains the dependency structure of the project."
-MSG_p="Location of the node in the configuration file where the paths to source header files are stored."
-MSG_P="Destination directory within the project where symbolic links to header files mentioned in the configuration files are meant to be created."
-MSG_s="Location of the node in the configuration file where the paths to source SO files are stored."
-MSG_S="Destination directory within the project where symbolic links to SO mentioned in the configuration files are meant to be created."
-MSG_USAGE="Usage: $0 [-c arg] [-p arg] [-P arg] [-s arg] [-S arg]\r\n\
+MSG_d="Location of the node in the configuration file where information about dependencies is stored."
+MSG_USAGE="Usage: $0 [-c arg] [-d arg]\r\n\
 \t-c --config_file\t${MSG_c}\r\n\
-\t-p --header_prefix\t${MSG_p}\r\n\
-\t-P --header_dest\t${MSG_P}\r\n\
-\t-s --so_prefix\t\t${MSG_s}\r\n\
-\t-S --so_dest\t\t${MSG_S}\r\n\r\n\
-Example: $0 -c config.xml -p config/API/Header_files -P API/Header_files -s config/API/Dynamic_libraries -S API/Dynamic_libraries"
+\t-d --deps_node\t${MSG_d}\r\n\r\n\
+Example: $0 -c \"config.xml\" -d \"config/Dependencies/\""
 MSG_OPT_ERROR="An error ocurred while parsing option: $1"
-###################################################################################################################################################
+######################################################################################################
 
 ################################################################################################
 # CreateSymLinks variables
-PATH_DEPS_LIST="Temp/sym_links_list.txt"
+PATH_DEPS_LIST="Temp/deps_list.txt"
+PATH_DEPS_FILES="Temp/deps_files.txt"
 
 # CreateSymLinks messages
 MSG_CREATING_SYM_LINKS="********************\r\nCreating symbolic links\r\n********************"
@@ -41,10 +36,7 @@ declare -A OPT_VALUES
 
 # Associate each option internal variable with its default value (if any).
 OPT_VALUES["CONFIG_FILE"]="config.xml"
-OPT_VALUES["HEADER_PREFIX"]=""
-OPT_VALUES["HEADER_DEST"]=""
-OPT_VALUES["SO_PREFIX"]=""
-OPT_VALUES["SO_DEST"]=""
+OPT_VALUES["DEPS_NODE"]="config/Dependencies/"
 #################################################################################
 
 #########################################################################
@@ -72,23 +64,8 @@ ParseOptions()
                 shift 2
                 ;;
 
-            -p | --header_prefix)
-                OPT_VALUES["HEADER_PREFIX"]="$2"
-                shift 2
-                ;;
-
-            -P | --header_dest)
-                OPT_VALUES["HEADER_DEST"]="$2"
-                shift 2
-                ;;
-
-            -s | --so_prefix)
-                OPT_VALUES["SO_PREFIX"]="$2"
-                shift 2
-                ;;
-
-            -S | --so_dest)
-                OPT_VALUES["SO_DEST"]="$2"
+            -d | --deps_node)
+                OPT_VALUES["DEPS_NODE"]="$2"
                 shift 2
                 ;;
 
@@ -117,32 +94,31 @@ ParseOptions()
 CheckOptionValues()
 {
     local -n options_map="$1"
+
     for key in "${!options_map[@]}"
     do
         if [ -z "${options_map[$key]}" ];
         then
             echo "${key} has no associated value"
             exit 1
-        else
-            echo "${key} = ${options_map[$key]}"
         fi
     done
 }
 
-###################################################################################################
+###############################################################################################################################################
 # Brief: generate symbolic links based on what is found within the nodes of the configuration file.
-# $1: $CONFIG_FILE
-# $2: $FILE_PREFIX          (example: "config/Dependencies/Header_files")
-# $3: $ORG_LOCATIONS_LIST   
-# $4: $SYM_LINK_DEST        (example: "Dependency_files/Header_files")
+# $1: $CONFIG_FILE      (example: "config.xml")
+# $2: $DEPS_NODE        (example: "config/Dependencies/")
+# $3: $PATH_DEPS_LIST   
+# $4: $PATH_DEPS_FILES
 # Returns: 1 if the configuration file could not be found, 0 otherwise.
-###################################################################################################
+###############################################################################################################################################
 CreateSymLinks()
 {
     local config_file="$1"
-    local file_prefix="$2"
-    local org_locations_list="$3"
-    local sym_link_dest="$4"
+    local deps_node="$2"
+    local path_deps_list="$3"
+    local path_deps_files="$4"
 
     # Check if configuration file exists.
     if [ ! -e $config_file ]
@@ -151,25 +127,86 @@ CreateSymLinks()
         exit 1
     fi
 
-    # Generate temporary directory which stores a file thatincludes the list
-    # of directories to generate.
+    # Generate temporary directory which stores a file that includes the list of directories to generate.
     if [ ! -d Temp ]; then
         mkdir Temp
     fi
 
-    # Get the list of paths in which files to be linked are.
-    xmlstarlet el -a $config_file | grep $file_prefix | grep "@" > $org_locations_list
+    # Get depenedencies.
+    local deps_dest=$(xmlstarlet sel -t -v "${deps_node}@Dest" $config_file)
+    echo "Destination: $(pwd)/${deps_dest}"
 
-    echo -e "${MSG_CREATING_SYM_LINKS}"
-
-    # Create symlinks of the header files in their target destination directory.
+    xmlstarlet el -a ${config_file} | grep ${deps_node} | grep -v "@" > ${path_deps_list}
+    
     while read -r line
     do
-        local source=$(xmlstarlet sel -t -v "//${line}" $config_file)
-        local full_path=$(readlink -f $source)
-        echo "Making symbolic link from $full_path to $sym_link_dest."
-        ln -sf $full_path $sym_link_dest
-    done < $org_locations_list
+        dep_API_xml_path="${line}"
+        dep_name="${line/#$deps_node}"
+        
+        declare -A dep_data
+
+        dep_data["local_path"]=""
+        dep_data["URL"]=""
+        dep_data["version_major"]=""
+        dep_data["version_minor"]=""
+        dep_data["version_mode"]=""
+
+        for key in "${!dep_data[@]}"
+        do
+            dep_data["$key"]="$(xmlstarlet sel -t -v "${dep_API_xml_path}/@${key}" $config_file)"
+        done
+
+        version_suffix=""
+        if [ ${dep_data["version_mode"]} == "DEBUG" ]
+        then
+            version_suffix="_DEBUG"
+        fi
+
+        full_version="v${dep_data["version_major"]}_${dep_data["version_minor"]}${version_suffix}"
+        dep_api_path="$(eval echo ${dep_data["local_path"]}/API/${full_version})"
+        
+        dep_details="*************************\r\n\
+Name: ${dep_name}\r\n\
+Version: ${full_version}\r\n\
+Local path: ${dep_data["local_path"]}\r\n\
+API path: ${dep_api_path}\r\n\
+URL: ${dep_data["URL"]}"
+
+        echo -e "${dep_details}"
+
+        # Create symbolic links for API header files.
+        local dep_header_files_path="${dep_api_path}/Header_files/"
+
+        if [ ! -d "${dep_header_files_path}" ]
+        then
+            echo "${dep_header_files_path} does not exist!"
+            exit 1
+        fi
+
+        ls "${dep_header_files_path}" > ${path_deps_files}        
+        while read -r line
+        do
+            echo "Creating symbolic link: ${deps_dest}/Header_files/${line} -> ${dep_header_files_path}${line}"
+            ln -sf "${dep_header_files_path}${line}" "${deps_dest}/Header_files/${line}"
+        done < ${path_deps_files}
+
+        # Create symbolic links for API SO files.
+        local dep_SO_files_path="${dep_api_path}/Dynamic_libraries/"
+
+        if [ ! -d "${dep_SO_files_path}" ]
+        then
+            echo "${dep_SO_files_path} does not exist!"
+            exit 1
+        fi
+        
+        ls "${dep_SO_files_path}" > ${path_deps_files}
+        while read -r line
+        do
+            echo "Creating symbolic link: ${deps_dest}/Dynamic_libraries/${line} -> ${dep_SO_files_path}${line}"
+            ln -sf "${dep_SO_files_path}${line}" "${deps_dest}/Dynamic_libraries/${line}"
+        done < ${path_deps_files}
+
+    done < ${path_deps_list}
 
     # Delete temporary files directory if it still exists.
     if [ -d Temp ]; then
@@ -180,13 +217,15 @@ CreateSymLinks()
 #######################################################################################################################
 # Main
 #######################################################################################################################
+echo -e "*********************************************************************************************************\r\n\
+GET DEPENDENCIES\r\n\
+*********************************************************************************************************"
 if [ $# -eq 0 ]; then echo  ${MSG_NO_OPT}; fi
 ParseOptions $@
 if [ $? -eq 1 ];then exit 1; fi
 CheckOptionValues OPT_VALUES
 if [ $? -eq 1 ];then exit 1; fi
-CreateSymLinks ${OPT_VALUES["CONFIG_FILE"]} ${OPT_VALUES["HEADER_PREFIX"]} $PATH_DEPS_LIST ${OPT_VALUES["HEADER_DEST"]}
+CreateSymLinks ${OPT_VALUES["CONFIG_FILE"]} ${OPT_VALUES["DEPS_NODE"]} $PATH_DEPS_LIST $PATH_DEPS_FILES
 if [ $? -eq 1 ];then exit 1; fi
-CreateSymLinks ${OPT_VALUES["CONFIG_FILE"]} ${OPT_VALUES["SO_PREFIX"]} $PATH_DEPS_LIST ${OPT_VALUES["SO_DEST"]}
-if [ $? -eq 1 ];then exit 1; fi
+echo "*********************************************************************************************************"
 #######################################################################################################################
