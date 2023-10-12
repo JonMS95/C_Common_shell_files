@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <Project_data
+        version_major="1"
+        version_minor="0"
+        version_mode="DEBUG"
+        URL="https://github.com/JonMS95/C_Common_shell_files"
+        languages="Bash"
+        type="Helper_files"
+    />
+    <!-- Directory structure -->
+    <Directories>
+        <API/>
+    </Directories>
+
+</config>
