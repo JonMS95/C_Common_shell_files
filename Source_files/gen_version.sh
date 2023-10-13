@@ -41,8 +41,8 @@ declare -A OPT_VALUES
 OPT_VALUES["CONFIG_FILE"]="config.xml"
 OPT_VALUES["API_DIR"]="API"
 OPT_VALUES["PRJ_INFO_NODE"]="config/Project_data/"
-OPT_VALUES["API_HEADER_SOURCE"]="$(find Source_files -name "*_api\.h")"
-OPT_VALUES["API_SO_SOURCE"]="$(find Dynamic_libraries -name "*\.so")"
+OPT_VALUES["API_HEADER_SOURCE"]="Source_files/$(ls Source_files | grep "_api\.h")"
+OPT_VALUES["API_SO_SOURCE"]="Dynamic_libraries/$(ls Dynamic_libraries)"
 #################################################################################
 
 #########################################################################
