@@ -202,8 +202,9 @@ URL: ${dep_data["URL"]}"
         ls "${dep_SO_files_path}" > ${path_deps_files}
         while read -r line
         do
-            echo "Creating symbolic link: ${deps_dest}/Dynamic_libraries/${line} -> ${dep_SO_files_path}${line}"
-            ln -sf "${dep_SO_files_path}${line}" "${deps_dest}/Dynamic_libraries/${line}"
+            lib_no_version=${line%%.so*}.so
+            echo "Creating symbolic link: ${deps_dest}/Dynamic_libraries/${line} -> ${dep_SO_files_path}${lib_no_version}"
+            ln -sf "${dep_SO_files_path}${line}" "${deps_dest}/Dynamic_libraries/${lib_no_version}"
         done < ${path_deps_files}
 
     done < ${path_deps_list}
