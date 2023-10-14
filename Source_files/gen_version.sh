@@ -152,7 +152,7 @@ GenAPIVersion()
     local mode="$(xmlstarlet sel -t -v "${prj_data_node}@version_mode" ${config_file})"
     local URL="$(xmlstarlet sel -t -v "${prj_data_node}@URL" ${config_file})"
 
-    # If version is either RELEASE or DEBUg, go on, otherwise, exit.
+    # If version is either RELEASE or DEBUG, go on, otherwise, exit.
     if [ ${mode} != "RELEASE" ] && [ ${mode} != "DEBUG" ]
     then
         echo "${MSG_WRONG_VERSION_NAME}"
