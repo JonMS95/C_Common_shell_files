@@ -17,11 +17,14 @@ MSG_OPT_ERROR="An error ocurred while parsing option: $1"
 
 ################################################################################################
 # CreateSymLinks variables
-PATH_DEPS_LIST="Temp/deps_list.txt"
-PATH_DEPS_FILES="Temp/deps_files.txt"
+PATH_DEPS_LIST="Temp_sym_links/deps_list.txt"
+PATH_DEPS_FILES="Temp_sym_links/deps_files.txt"
 
 # CreateSymLinks messages
 MSG_CREATING_SYM_LINKS="********************\r\nCreating symbolic links\r\n********************"
+MSG_CHECK_DEPS_EXIST="Check whether or not do dependencies exist."
+MSG_API_FOUND="API_found, everything is OK."
+MSG_CANNOT_DWNL_DEBUG="Cannot download DEBUG versions from GitHub"
 ################################################################################################
 
 #####################################################
@@ -128,8 +131,8 @@ CreateSymLinks()
     fi
 
     # Generate temporary directory which stores a file that includes the list of directories to generate.
-    if [ ! -d Temp ]; then
-        mkdir Temp
+    if [ ! -d Temp_sym_links ]; then
+        mkdir Temp_sym_links
     fi
 
     # Get depenedencies.
@@ -174,6 +177,55 @@ URL: ${dep_data["URL"]}"
 
         echo -e "${dep_details}"
 
+        echo ${MSG_CHECK_DEPS_EXIST}
+        local repo_parent_dir=$(eval echo $(dirname ${dep_data["local_path"]}))
+        local repo_dir=$(eval echo ${dep_data["local_path"]})
+        if [ -d ${dep_api_path} ]
+        then
+            echo ${MSG_API_FOUND}
+
+            if [ ${dep_data["version_mode"]} == "DEBUG" ]
+            then
+                echo ${MSG_CANNOT_DWNL_DEBUG}
+            fi
+
+            cd ${dep_data["local_path"]}
+
+            git pull
+            git checkout tags/${full_version}
+            make exe
+            git checkout main
+	 		git pull
+
+        else
+
+            if [ ${dep_data["version_mode"]} == "DEBUG" ]
+            then
+                echo ${MSG_CANNOT_DWNL_DEBUG}
+            fi
+
+            if [ ! -d ${repo_parent_dir} ]
+            then
+                echo "${repo_parent_dir} DOES NOT EXIST"
+                mkdir -p ${repo_parent_dir}
+            fi
+
+            current_dir=$(pwd)
+
+            cd ${repo_parent_dir}
+            git clone ${dep_data["URL"]}
+
+            cd ${repo_dir}
+
+            git checkout tags/${full_version}
+            
+            make exe
+
+            git checkout main
+            git pull
+            cd ${current_dir}
+        fi
+
         # Create symbolic links for API header files.
         local dep_header_files_path="${dep_api_path}/Header_files/"
 
@@ -203,15 +255,16 @@ URL: ${dep_data["URL"]}"
         while read -r line
         do
             lib_no_version=${line%%.so*}.so
-            echo "Creating symbolic link: ${deps_dest}/Dynamic_libraries/${line} -> ${dep_SO_files_path}${lib_no_version}"
+            echo "Creating symbolic link: ${deps_dest}/Dynamic_libraries/${lib_no_version} -> ${dep_SO_files_path}${line}"
             ln -sf "${dep_SO_files_path}${line}" "${deps_dest}/Dynamic_libraries/${lib_no_version}"
         done < ${path_deps_files}
 
     done < ${path_deps_list}
 
     # Delete temporary files directory if it still exists.
-    if [ -d Temp ]; then
-        rm -rf Temp
+    if [ -d Temp_sym_links ]; then
+        echo "Removing Temp_sym_links"
+        rm -rf Temp_sym_links
     fi
 }
 
