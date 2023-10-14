@@ -17,7 +17,7 @@ MSG_OPT_ERROR="An error ocurred while parsing option: $1"
 
 ########################################################################################
 # GenerateDirectories variables
-PATH_DIR_LIST="Temp/directory_list.txt"
+PATH_DIR_LIST="Temp_directories/directory_list.txt"
 
 # GenerateDirectories messages
 MSG_CREATING_DIRS="********************\r\nCreating directories\r\n********************"
@@ -126,8 +126,8 @@ GenerateDirectories()
 
     # Generate temporary directory which stores a file thatincludes the list
     # of directories to generate.
-    if [ ! -d Temp ]; then
-        mkdir Temp
+    if [ ! -d Temp_directories ]; then
+        mkdir Temp_directories
     fi
 
     # Get the list of directories to generate from configuration xml file.
@@ -149,8 +149,8 @@ GenerateDirectories()
     done < $PATH_DIR_LIST
 
     # Delete temporary files directory if it still exists.
-    if [ -d Temp ]; then
-        rm -rf Temp
+    if [ -d Temp_directories ]; then
+        rm -rf Temp_directories
     fi
 }
 
