@@ -24,7 +24,8 @@ PATH_DEPS_FILES="Temp_sym_links/deps_files.txt"
 MSG_CREATING_SYM_LINKS="********************\r\nCreating symbolic links\r\n********************"
 MSG_CHECK_DEPS_EXIST="Check whether or not do dependencies exist."
 MSG_API_FOUND="API_found, everything is OK."
-MSG_CANNOT_DWNL_DEBUG="Cannot download DEBUG versions from GitHub"
+MSG_CANNOT_SWITCH_TO_DEBUG="Cannot switch to DEBUG tag, as DEBUG versions are never tagged."
+MSG_CANNOT_DWNL_DEBUG="Cannot download DEBUG versions from GitHub."
 ################################################################################################
 
 #####################################################
@@ -180,28 +181,39 @@ URL: ${dep_data["URL"]}"
         echo ${MSG_CHECK_DEPS_EXIST}
         local repo_parent_dir=$(eval echo $(dirname ${dep_data["local_path"]}))
         local repo_dir=$(eval echo ${dep_data["local_path"]})
+        local current_dir=$(pwd)
+
         if [ -d ${dep_api_path} ]
         then
-            echo ${MSG_API_FOUND}
 
-            if [ ${dep_data["version_mode"]} == "DEBUG" ]
+            if [ -d ${dep_api_path} ]
             then
-                echo ${MSG_CANNOT_DWNL_DEBUG}
+                echo ${MSG_API_FOUND}
+            else
+                if [ ${dep_data["version_mode"]} == "DEBUG" ]
+                then
+                    echo ${MSG_CANNOT_SWITCH_TO_DEBUG}
+                    exit 1
+                fi
+
+                cd ${repo_dir}
+
+                git pull
+                git checkout tags/${full_version}
+
+                make exe
+                
+                git checkout main
+                git pull
+
+                cd ${current_dir}
             fi
-
-            cd ${dep_data["local_path"]}
-
-            git pull
-            git checkout tags/${full_version}
-            make exe
-            git checkout main
-	 		git pull
-
         else
 
             if [ ${dep_data["version_mode"]} == "DEBUG" ]
             then
                 echo ${MSG_CANNOT_DWNL_DEBUG}
+                exit 1
             fi
 
             if [ ! -d ${repo_parent_dir} ]
@@ -209,8 +221,6 @@ URL: ${dep_data["URL"]}"
                 echo "${repo_parent_dir} DOES NOT EXIST"
                 mkdir -p ${repo_parent_dir}
             fi
-
-            current_dir=$(pwd)
 
             cd ${repo_parent_dir}
             git clone ${dep_data["URL"]}
@@ -223,6 +233,7 @@ URL: ${dep_data["URL"]}"
 
             git checkout main
             git pull
+
             cd ${current_dir}
         fi
 
@@ -262,8 +273,8 @@ URL: ${dep_data["URL"]}"
     done < ${path_deps_list}
 
     # Delete temporary files directory if it still exists.
-    if [ -d Temp_sym_links ]; then
-        echo "Removing Temp_sym_links"
+    if [ -d Temp_sym_links ]
+    then
         rm -rf Temp_sym_links
     fi
 }
