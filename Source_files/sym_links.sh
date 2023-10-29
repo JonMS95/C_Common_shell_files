@@ -169,7 +169,7 @@ CreateSymLinks()
                 lib_file_name=$(basename ${dep_data["local_path"]})
 
                 dep_details="*************************\r\n\
-Name: ${lib_file_name}\r\n\
+Name: ${dep_name}\r\n\
 Local path: ${dep_data["local_path"]}\r\n\
 Type: ${dep_data["type"]}"
                 echo -e ${dep_details}
