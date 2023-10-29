@@ -162,7 +162,7 @@ CreateSymLinks()
         done
 
         # If type is built-in (i.e., it comes along with the OS), then follow the path below then continue to the next dependency.
-        if [ -n ${dep_data[type]} ]
+        if [ -n "${dep_data[type]}" ]
         then
             if [ ${dep_data[type]} == "built-in" ]
             then
