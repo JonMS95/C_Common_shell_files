@@ -154,11 +154,32 @@ CreateSymLinks()
         dep_data["version_major"]=""
         dep_data["version_minor"]=""
         dep_data["version_mode"]=""
+        dep_data["type"]=""
 
         for key in "${!dep_data[@]}"
         do
             dep_data["$key"]="$(xmlstarlet sel -t -v "${dep_API_xml_path}/@${key}" $config_file)"
         done
+
+        # If type is built-in (i.e., it comes along with the OS), then follow the path below then continue to the next dependency.
+        if [ -n ${dep_data[type]} ]
+        then
+            if [ ${dep_data[type]} == "built-in" ]
+            then
+                lib_file_name=$(basename ${dep_data["local_path"]})
+
+                dep_details="*************************\r\n\
+Name: ${lib_file_name}\r\n\
+Local path: ${dep_data["local_path"]}\r\n\
+Type: ${dep_data["type"]}"
+                echo -e ${dep_details}
+                
+                lib_no_version=${lib_file_name%%.so*}.so
+                echo "Creating symbolic link: ${deps_dest}/Dynamic_libraries/${lib_no_version} -> ${dep_data["local_path"]}"
+                ln -sf "${dep_data["local_path"]}" "${deps_dest}/Dynamic_libraries/${lib_no_version}"
+                continue
+            fi
+        fi
 
         version_suffix=""
         if [ ${dep_data["version_mode"]} == "DEBUG" ]
@@ -168,13 +189,19 @@ CreateSymLinks()
 
         full_version="v${dep_data["version_major"]}_${dep_data["version_minor"]}${version_suffix}"
         dep_api_path="$(eval echo ${dep_data["local_path"]}/API/${full_version})"
-        
+
+        if [ -z ${dep_data["type"]} ]
+        then
+            dep_data["type"]="JMS"
+        fi
+
         dep_details="*************************\r\n\
 Name: ${dep_name}\r\n\
 Version: ${full_version}\r\n\
 Local path: ${dep_data["local_path"]}\r\n\
 API path: ${dep_api_path}\r\n\
-URL: ${dep_data["URL"]}"
+URL: ${dep_data["URL"]}\r\n\
+Type: ${dep_data["type"]}"
 
         echo -e "${dep_details}"
 
