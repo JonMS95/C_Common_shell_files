@@ -25,6 +25,7 @@ MSG_CREATING_SYM_LINKS="********************\r\nCreating symbolic links\r\n*****
 MSG_CHECK_DEPS_EXIST="Check whether or not do dependencies exist."
 MSG_API_FOUND="API_found, everything is OK."
 MSG_CANNOT_SWITCH_TO_DEBUG="Cannot switch to DEBUG tag, as DEBUG versions are never tagged."
+MSG_NO_URL_FOUND="The dependency could not be found locally and no URL has been provided."
 MSG_CANNOT_DWNL_DEBUG="Cannot download DEBUG versions from GitHub."
 ################################################################################################
 
@@ -158,7 +159,7 @@ CreateSymLinks()
 
         for key in "${!dep_data[@]}"
         do
-            dep_data["$key"]="$(xmlstarlet sel -t -v "${dep_API_xml_path}/@${key}" $config_file)"
+            dep_data["$key"]="$(eval echo $(xmlstarlet sel -t -v "${dep_API_xml_path}/@${key}" $config_file))"
         done
 
         # If type is built-in (i.e., it comes along with the OS), then follow the path below and continue to the next dependency.
@@ -182,14 +183,29 @@ Type: ${dep_data["type"]}"
         fi
 
         version_suffix=""
-        if [ ${dep_data["version_mode"]} == "DEBUG" ]
+        if [ -n "${dep_data["version_mode"]}" ]
         then
-            version_suffix="_DEBUG"
+            if [ ${dep_data["version_mode"]} == "DEBUG" ]
+            then
+                version_suffix="_DEBUG"
+            fi
         fi
 
-        full_version="v${dep_data["version_major"]}_${dep_data["version_minor"]}${version_suffix}"
-        dep_api_path="$(eval echo ${dep_data["local_path"]}/API/${full_version})"
+        full_version=""
+        if [ -n "${dep_data["version_major"]}" ] && [ -n "${dep_data["version_minor"]}" ]
+        then
+            full_version="v${dep_data["version_major"]}_${dep_data["version_minor"]}${version_suffix}"
+        fi
+        
+        if [ -n "${dep_data[type]}" ] && [ ${dep_data["type"]} == "data" ]
+        then
+            dep_api_path=${dep_data["local_path"]}
+        else
+            dep_api_path=${dep_data["local_path"]}/API/${full_version}
+        fi
 
+        # If no data type was specified, it is assumed to be JMS type library by default.
+        # Apart from that, if no URL was provided, then the field should be filled either way.
         if [ -z ${dep_data["type"]} ]
         then
             dep_data["type"]="JMS"
@@ -206,13 +222,12 @@ Type: ${dep_data["type"]}"
         echo -e "${dep_details}"
 
         echo ${MSG_CHECK_DEPS_EXIST}
-        local repo_parent_dir=$(eval echo $(dirname ${dep_data["local_path"]}))
-        local repo_dir=$(eval echo ${dep_data["local_path"]})
+        local repo_parent_dir=$(dirname ${dep_data["local_path"]})
+        local repo_dir=${dep_data["local_path"]}
         local current_dir=$(pwd)
 
         if [ -d ${dep_api_path} ]
         then
-
             if [ -d ${dep_api_path} ]
             then
                 echo ${MSG_API_FOUND}
@@ -228,7 +243,10 @@ Type: ${dep_data["type"]}"
                 git pull
                 git checkout tags/${full_version}
 
-                make exe
+                if [ ${dep_data["type"]} == "JMS" ]
+                then
+                    make exe
+                fi
                 
                 git checkout main
                 git pull
@@ -236,11 +254,13 @@ Type: ${dep_data["type"]}"
                 cd ${current_dir}
             fi
         else
-
-            if [ ${dep_data["version_mode"]} == "DEBUG" ]
+            if [ -n "${dep_data["version_mode"]}" ]
             then
-                echo ${MSG_CANNOT_DWNL_DEBUG}
-                exit 1
+                if [ ${dep_data["version_mode"]} == "DEBUG" ]
+                then
+                    echo ${MSG_CANNOT_DWNL_DEBUG}
+                    exit 1
+                fi
             fi
 
             if [ ! -d ${repo_parent_dir} ]
@@ -250,18 +270,35 @@ Type: ${dep_data["type"]}"
             fi
 
             cd ${repo_parent_dir}
+
+            if [ -z ${dep_data["URL"]} ]
+            then
+                echo ${MSG_NO_URL_FOUND}
+                exit 1
+            fi
+
             git clone ${dep_data["URL"]}
 
             cd ${repo_dir}
 
             git checkout tags/${full_version}
             
-            make exe
+            if [ ${dep_data["type"]} == "JMS" ]
+            then
+                make exe
+            fi
 
             git checkout main
             git pull
 
             cd ${current_dir}
+        fi
+
+        if [ ${dep_data["type"]} == "data" ]
+        then
+            echo "Creating symbolic link: ${deps_dest}/Data/$(basename ${dep_data["local_path"]}) -> ${dep_data["local_path"]}"
+            ln -sf "${dep_data["local_path"]}" "${deps_dest}/Data"
+            continue
         fi
 
         # Create symbolic links for API header files.
