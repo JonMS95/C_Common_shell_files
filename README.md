@@ -1,6 +1,6 @@
 # C_Common_shell_files: a common set of useful bash / shell files 🧰
 The purpose of this set of bash / shell files is to provide some useful files to be used alongside _JMS_ projects, such as
-[C_Server_Socket](https://github.com/JonMS95/C_Server_Socket) or[C_Arg_Parse](https://github.com/JonMS95/C_Arg_Parse) among many others.
+[C_Server_Socket](https://github.com/JonMS95/C_Server_Socket) or [C_Arg_Parse](https://github.com/JonMS95/C_Arg_Parse) among many others.
 
 Despite its name, it can be used with C++ projects too, as their project structure is the same for both C/C++ projects.
 
