@@ -22,7 +22,7 @@ In the beginning, all of the libraries I was writing had a set of bash files tha
 to write a downloadable set of files to be used alongside each of those projects. As a consequence, it is no longer required to write all of
 those files for each project, but just to download them instead.
 
-Note that again, this library is meant to be used alongside _JMS_ projects, not by third-party ones, as they have been designed to be used in combination with a specific files and directory structure.
+Note that again, this library is meant to be used alongside _JMS_ projects, not by third-party ones, as they have been designed to be used in combination with a specific files and directories structure.
 
 
 ## Features <a id="features"></a> 🌟
