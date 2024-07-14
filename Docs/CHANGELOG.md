@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.2] (Unreleased)
 ### Added
 - Linking data is allowed from now on, it's to say, data which does not need to compile (such as text or HTML documents)
+- Documentation (license, contribution rules, readme and changelog)
 
 
 ## [1.1] - 2023-11-02
