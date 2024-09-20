@@ -313,8 +313,8 @@ Type: ${dep_data["type"]}"
         ls "${dep_header_files_path}" > ${path_deps_files}        
         while read -r line
         do
-            echo "Creating symbolic link: ${deps_dest}/Header_files/${line} -> ${dep_header_files_path}${line}"
-            ln -sf "${dep_header_files_path}${line}" "${deps_dest}/Header_files/${line}"
+            echo "Creating symbolic link: ${deps_dest}/Header_files/${line} -> $(readlink -f ${dep_header_files_path}${line})"
+            ln -sf "$(readlink -f ${dep_header_files_path}${line})" "${deps_dest}/Header_files/${line}"
         done < ${path_deps_files}
 
         # Create symbolic links for API SO files.
@@ -330,8 +330,8 @@ Type: ${dep_data["type"]}"
         while read -r line
         do
             lib_no_version=${line%%.so*}.so
-            echo "Creating symbolic link: ${deps_dest}/Dynamic_libraries/${lib_no_version} -> ${dep_SO_files_path}${line}"
-            ln -sf "${dep_SO_files_path}${line}" "${deps_dest}/Dynamic_libraries/${lib_no_version}"
+            echo "Creating symbolic link: ${deps_dest}/Dynamic_libraries/${lib_no_version} -> $(readlink -f ${dep_SO_files_path}${line})"
+            ln -sf "$(readlink -f ${dep_SO_files_path}${line})" "${deps_dest}/Dynamic_libraries/${lib_no_version}"
         done < ${path_deps_files}
 
     done < ${path_deps_list}
