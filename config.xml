@@ -2,8 +2,8 @@
 <config>
     <Project_data
         version_major="1"
-        version_minor="2"
-        version_mode="RELEASE"
+        version_minor="3"
+        version_mode="DEBUG"
         URL="https://github.com/JonMS95/C_Common_shell_files"
         languages="Bash"
         type="Helper_files"
