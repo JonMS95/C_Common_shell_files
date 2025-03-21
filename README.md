@@ -64,7 +64,7 @@ find . -type f -exec chmod u+x {} +
 3. To give access to other JMS libraries using this one, it should be exported to its own API directory. To do so, just apply the following:
 
 ```bash
-[./Source_files/gen_CSF_version.sh](Source_files/gen_CSF_version.sh)
+[./src/gen_CSF_version.sh](src/gen_CSF_version.sh)
 ```
 
 The result of the line above will be a new API directory (which will match the used version). Within it, a *.sh* files will be found.
