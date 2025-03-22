@@ -176,10 +176,19 @@ Type: ${dep_data["type"]}"
                 echo -e ${dep_details}
                 
                 lib_no_version=${lib_file_name%%.so*}.so
-                echo "Creating symbolic link: ${deps_dest}/lib/${lib_no_version} -> ${dep_data["local_path"]}"
-                ln -sf "${dep_data["local_path"]}" "${deps_dest}/lib/${lib_no_version}"
-                continue
+                echo "Creating symbolic link: ${deps_dest}/Dynamic_libraries/${lib_no_version} -> ${dep_data["local_path"]}"
+                ln -sf "${dep_data["local_path"]}" "${deps_dest}/Dynamic_libraries/${lib_no_version}"
+                
+            elif [ ${dep_data[type]} == "system" ]
+            then
+                dep_details="*************************\r\n\
+Name: ${dep_name}\r\n\
+Type: ${dep_data["type"]}"
+                echo -e ${dep_details}
+
             fi
+
+            continue
         fi
 
         version_suffix=""
