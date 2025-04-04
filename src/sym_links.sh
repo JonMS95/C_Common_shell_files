@@ -177,8 +177,8 @@ Type: ${dep_data["type"]}"
                 echo -e ${dep_details}
                 
                 lib_no_version=${lib_file_name%%.so*}.so
-                echo "Creating symbolic link: ${deps_dest}/Dynamic_libraries/${lib_no_version} -> ${dep_data["local_path"]}"
-                ln -sf "${dep_data["local_path"]}" "${deps_dest}/Dynamic_libraries/${lib_no_version}"
+                echo "Creating symbolic link: ${deps_dest}/lib/${lib_no_version} -> ${dep_data["local_path"]}"
+                ln -sf "${dep_data["local_path"]}" "${deps_dest}/lib/${lib_no_version}"
                 
             elif [ ${dep_data[type]} == "system" ]
             then
@@ -192,7 +192,6 @@ Type: ${dep_data["type"]}"
                     echo "Installing ${dep_name} ..."
                     eval ${dep_data["install_cmd"]}
                 fi
-
             fi
 
             continue
