@@ -156,6 +156,7 @@ CreateSymLinks()
         dep_data["version_minor"]=""
         dep_data["version_mode"]=""
         dep_data["type"]=""
+        dep_data["install_cmd"]=""
 
         for key in "${!dep_data[@]}"
         do
@@ -185,6 +186,12 @@ Type: ${dep_data["type"]}"
 Name: ${dep_name}\r\n\
 Type: ${dep_data["type"]}"
                 echo -e ${dep_details}
+
+                if [ -n "${dep_data["install_cmd"]}" ]
+                then
+                    echo "Installing ${dep_name} ..."
+                    eval ${dep_data["install_cmd"]}
+                fi
 
             fi
 
