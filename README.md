@@ -83,7 +83,7 @@ In the particular case of this library, there's not much to be said about its us
 
 
 ## To do <a id="to-do"></a> ☑️
-- [ ] If built-in libraries are needed but they are not installed, download and install them
+- [ ] Add a generic Makefile as part of the library.
 
 
 ## Related Documents <a id="related-documents"></a> 🗄️
