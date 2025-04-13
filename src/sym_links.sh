@@ -199,11 +199,11 @@ Type: ${dep_data["type"]}"
                     
                     if echo ${install_cmd_try} | grep -q "The following packages will be upgraded:"
                     then
-                        echo "${dep_name} is already installed but has pending updates."
+                        echo "${dep_name} (${dep_data["package"]}) is already installed but has pending updates."
                     elif echo ${install_cmd_try} | grep -q "The following NEW packages will be installed:"
                     then
                         local install_cmd_assume_yes="${install_cmd_base} -y"
-                        echo "${dep_name} should be installed."
+                        echo "${dep_name} (${dep_data["package"]}) should be installed."
                         eval ${install_cmd_assume_yes}
                     else
                         echo "${dep_name} (${dep_data["package"]}) is already installed. No updates required."
