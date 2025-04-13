@@ -17,7 +17,7 @@ MSG_USAGE="Usage: $0 [-c arg] [-n arg] [-a arg] [-k arg] [-s arg]\r\n\
 \t-a --api_dir_name\t${MSG_a}\r\n\
 \t-k --api_header_src\t${MSG_k}\r\n\
 \t-s --api_so_src\t\t${MSG_s}\r\n\r\n\
-Example: $0 -c \"config.xml\" -n \"config/Project_data/\" -a API -k Source_files/my_lib_api.h -s Dynamic_libraries/lib_prj.so"
+Example: $0 -c \"config.xml\" -n \"config/Project_data/\" -a API -k src/my_lib_api.h -s lib/lib_prj.so"
 MSG_OPT_ERROR="An error ocurred while parsing option: $1"
 #################################################################################################################################################
 
@@ -41,8 +41,8 @@ declare -A OPT_VALUES
 OPT_VALUES["CONFIG_FILE"]="config.xml"
 OPT_VALUES["API_DIR"]="API"
 OPT_VALUES["PRJ_INFO_NODE"]="config/Project_data/"
-OPT_VALUES["API_HEADER_SOURCE"]="Source_files/$(ls Source_files | grep "_api\.h")"
-OPT_VALUES["API_SO_SOURCE"]="Dynamic_libraries/$(ls Dynamic_libraries)"
+OPT_VALUES["API_HEADER_SOURCE"]="src/$(ls src | grep "_api\.h")"
+OPT_VALUES["API_SO_SOURCE"]="lib/$(ls lib)"
 #################################################################################
 
 #########################################################################
@@ -181,12 +181,12 @@ GenAPIVersion()
 
         new_api_dir="${API_dir}/${version}${version_suffix}/"
 
-        mkdir -p ${new_api_dir}{Header_files,Dynamic_libraries}
+        mkdir -p ${new_api_dir}{inc,lib}
     fi
 
     # Copy API files to newly created directories.
-    cp ${api_header_src} "${new_api_dir}Header_files"
-    cp ${api_so_src} "${new_api_dir}Dynamic_libraries"
+    cp ${api_header_src} "${new_api_dir}inc/$(basename ${api_header_src}).${version_major}.${version_minor}"
+    cp ${api_so_src} "${new_api_dir}lib"
 }
 
 #######################################################################################################################

@@ -64,5 +64,7 @@ else
 
     mkdir -p ${new_api_dir}
 
-    cp ${script_dir_location}/* "${API_dir}/${version}${version_suffix}/"
+    cp ${script_dir_location}/* ${new_api_dir}
+
+    chmod a-w ${new_api_dir}/*
 fi

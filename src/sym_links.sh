@@ -17,8 +17,8 @@ MSG_OPT_ERROR="An error ocurred while parsing option: $1"
 
 ################################################################################################
 # CreateSymLinks variables
-PATH_DEPS_LIST="Temp_sym_links/deps_list.txt"
-PATH_DEPS_FILES="Temp_sym_links/deps_files.txt"
+PATH_DEPS_LIST="temp_sym_links/deps_list.txt"
+PATH_DEPS_FILES="temp_sym_links/deps_files.txt"
 
 # CreateSymLinks messages
 MSG_CREATING_SYM_LINKS="********************\r\nCreating symbolic links\r\n********************"
@@ -133,8 +133,8 @@ CreateSymLinks()
     fi
 
     # Generate temporary directory which stores a file that includes the list of directories to generate.
-    if [ ! -d Temp_sym_links ]; then
-        mkdir Temp_sym_links
+    if [ ! -d temp_sym_links ]; then
+        mkdir temp_sym_links
     fi
 
     # Get depenedencies.
@@ -156,6 +156,7 @@ CreateSymLinks()
         dep_data["version_minor"]=""
         dep_data["version_mode"]=""
         dep_data["type"]=""
+        dep_data["package"]=""
 
         for key in "${!dep_data[@]}"
         do
@@ -171,15 +172,46 @@ CreateSymLinks()
 
                 dep_details="*************************\r\n\
 Name: ${dep_name}\r\n\
-Local path: ${dep_data["local_path"]}\r\n\
+Local path:  $(realpath ${dep_data["local_path"]})\r\n\
 Type: ${dep_data["type"]}"
+
                 echo -e ${dep_details}
                 
                 lib_no_version=${lib_file_name%%.so*}.so
-                echo "Creating symbolic link: ${deps_dest}/Dynamic_libraries/${lib_no_version} -> ${dep_data["local_path"]}"
-                ln -sf "${dep_data["local_path"]}" "${deps_dest}/Dynamic_libraries/${lib_no_version}"
-                continue
+                echo "Creating symbolic link: ${deps_dest}/lib/${lib_no_version} -> ${dep_data["local_path"]}"
+                ln -sf "${dep_data["local_path"]}" "${deps_dest}/lib/${lib_no_version}"
+                
+            elif [ ${dep_data[type]} == "APT_package" ]
+            then
+                dep_details="*************************\r\n\
+Name: ${dep_name}\r\n\
+Type: ${dep_data["type"]}"
+
+                echo -e ${dep_details}
+
+                if [ -n "${dep_data["package"]}" ]
+                then
+                    local install_cmd_base="sudo apt install ${dep_data["package"]}"
+
+                    echo "Installing ${dep_name} ..."
+                    
+                    local install_cmd_try=$(${install_cmd_base} --dry-run 2>&1)
+                    
+                    if echo ${install_cmd_try} | grep -q "The following packages will be upgraded:"
+                    then
+                        echo "${dep_name} (${dep_data["package"]}) is already installed but has pending updates."
+                    elif echo ${install_cmd_try} | grep -q "The following NEW packages will be installed:"
+                    then
+                        local install_cmd_assume_yes="${install_cmd_base} -y"
+                        echo "${dep_name} (${dep_data["package"]}) should be installed."
+                        eval ${install_cmd_assume_yes}
+                    else
+                        echo "${dep_name} (${dep_data["package"]}) is already installed. No updates required."
+                    fi
+                fi
             fi
+
+            continue
         fi
 
         version_suffix=""
@@ -214,8 +246,8 @@ Type: ${dep_data["type"]}"
         dep_details="*************************\r\n\
 Name: ${dep_name}\r\n\
 Version: ${full_version}\r\n\
-Local path: ${dep_data["local_path"]}\r\n\
-API path: ${dep_api_path}\r\n\
+Local path: $(realpath ${dep_data["local_path"]})\r\n\
+API path: $(realpath ${dep_api_path})\r\n\
 URL: ${dep_data["URL"]}\r\n\
 Type: ${dep_data["type"]}"
 
@@ -302,7 +334,7 @@ Type: ${dep_data["type"]}"
         fi
 
         # Create symbolic links for API header files.
-        local dep_header_files_path="${dep_api_path}/Header_files/"
+        local dep_header_files_path="${dep_api_path}/inc/"
 
         if [ ! -d "${dep_header_files_path}" ]
         then
@@ -313,12 +345,13 @@ Type: ${dep_data["type"]}"
         ls "${dep_header_files_path}" > ${path_deps_files}        
         while read -r line
         do
-            echo "Creating symbolic link: ${deps_dest}/Header_files/${line} -> $(readlink -f ${dep_header_files_path}${line})"
-            ln -sf "$(readlink -f ${dep_header_files_path}${line})" "${deps_dest}/Header_files/${line}"
+            inc_no_version=${line%%.h*}.h
+            echo "Creating symbolic link: ${deps_dest}/inc/${inc_no_version} -> $(readlink -f ${dep_header_files_path}${line})"
+            ln -sf "$(readlink -f ${dep_header_files_path}${line})" "${deps_dest}/inc/${inc_no_version}"
         done < ${path_deps_files}
 
         # Create symbolic links for API SO files.
-        local dep_SO_files_path="${dep_api_path}/Dynamic_libraries/"
+        local dep_SO_files_path="${dep_api_path}/lib/"
 
         if [ ! -d "${dep_SO_files_path}" ]
         then
@@ -330,16 +363,16 @@ Type: ${dep_data["type"]}"
         while read -r line
         do
             lib_no_version=${line%%.so*}.so
-            echo "Creating symbolic link: ${deps_dest}/Dynamic_libraries/${lib_no_version} -> $(readlink -f ${dep_SO_files_path}${line})"
-            ln -sf "$(readlink -f ${dep_SO_files_path}${line})" "${deps_dest}/Dynamic_libraries/${lib_no_version}"
+            echo "Creating symbolic link: ${deps_dest}/lib/${lib_no_version} -> $(readlink -f ${dep_SO_files_path}${line})"
+            ln -sf "$(readlink -f ${dep_SO_files_path}${line})" "${deps_dest}/lib/${lib_no_version}"
         done < ${path_deps_files}
 
     done < ${path_deps_list}
 
     # Delete temporary files directory if it still exists.
-    if [ -d Temp_sym_links ]
+    if [ -d temp_sym_links ]
     then
-        rm -rf Temp_sym_links
+        rm -rf temp_sym_links
     fi
 }
 
