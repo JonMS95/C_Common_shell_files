@@ -156,7 +156,7 @@ CreateSymLinks()
         dep_data["version_minor"]=""
         dep_data["version_mode"]=""
         dep_data["type"]=""
-        dep_data["install_cmd"]=""
+        dep_data["package"]=""
 
         for key in "${!dep_data[@]}"
         do
@@ -174,23 +174,40 @@ CreateSymLinks()
 Name: ${dep_name}\r\n\
 Local path:  $(realpath ${dep_data["local_path"]})\r\n\
 Type: ${dep_data["type"]}"
+
                 echo -e ${dep_details}
                 
                 lib_no_version=${lib_file_name%%.so*}.so
                 echo "Creating symbolic link: ${deps_dest}/lib/${lib_no_version} -> ${dep_data["local_path"]}"
                 ln -sf "${dep_data["local_path"]}" "${deps_dest}/lib/${lib_no_version}"
                 
-            elif [ ${dep_data[type]} == "system" ]
+            elif [ ${dep_data[type]} == "APT_package" ]
             then
                 dep_details="*************************\r\n\
 Name: ${dep_name}\r\n\
 Type: ${dep_data["type"]}"
+
                 echo -e ${dep_details}
 
-                if [ -n "${dep_data["install_cmd"]}" ]
+                if [ -n "${dep_data["package"]}" ]
                 then
+                    local install_cmd_base="sudo apt install ${dep_data["package"]}"
+
                     echo "Installing ${dep_name} ..."
-                    eval ${dep_data["install_cmd"]}
+                    
+                    local install_cmd_try=$(${install_cmd_base} --dry-run 2>&1)
+                    
+                    if echo ${install_cmd_try} | grep -q "The following packages will be upgraded:"
+                    then
+                        echo "${dep_name} is already installed but has pending updates."
+                    elif echo ${install_cmd_try} | grep -q "The following NEW packages will be installed:"
+                    then
+                        local install_cmd_assume_yes="${install_cmd_base} -y"
+                        echo "${dep_name} should be installed."
+                        eval ${install_cmd_assume_yes}
+                    else
+                        echo "${dep_name} (${dep_data["package"]}) is already installed. No updates required."
+                    fi
                 fi
             fi
 
