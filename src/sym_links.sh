@@ -11,7 +11,7 @@ MSG_d="Location of the node in the configuration file where information about de
 MSG_USAGE="Usage: $0 [-c arg] [-d arg]\r\n\
 \t-c --config_file\t${MSG_c}\r\n\
 \t-d --deps_node\t${MSG_d}\r\n\r\n\
-Example: $0 -c \"config.xml\" -d \"config/Dependencies/\""
+Example: $0 -c \"config.xml\" -d \"config/deps/\""
 MSG_OPT_ERROR="An error ocurred while parsing option: $1"
 ######################################################################################################
 
@@ -41,7 +41,7 @@ declare -A OPT_VALUES
 
 # Associate each option internal variable with its default value (if any).
 OPT_VALUES["CONFIG_FILE"]="config.xml"
-OPT_VALUES["DEPS_NODE"]="config/Dependencies/"
+OPT_VALUES["DEPS_NODE"]="config/deps/"
 #################################################################################
 
 #########################################################################
@@ -113,7 +113,7 @@ CheckOptionValues()
 ###############################################################################################################################################
 # Brief: generate symbolic links based on what is found within the nodes of the configuration file.
 # $1: $CONFIG_FILE      (example: "config.xml")
-# $2: $DEPS_NODE        (example: "config/Dependencies/")
+# $2: $DEPS_NODE        (example: "config/deps/")
 # $3: $PATH_DEPS_LIST   
 # $4: $PATH_DEPS_FILES
 # Returns: 1 if the configuration file could not be found, 0 otherwise.
