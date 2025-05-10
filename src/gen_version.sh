@@ -175,7 +175,7 @@ GenAPIVersion()
 
         if [ ${mode} == "DEBUG" ]
         then
-            rm -rf "${API_dir}/${version}_DEBUG"
+            sudo rm -rf "${API_dir}/${version}_DEBUG"
             version_suffix="_DEBUG"
         fi
 
@@ -187,6 +187,10 @@ GenAPIVersion()
     # Copy API files to newly created directories.
     cp ${api_header_src} "${new_api_dir}inc/$(basename ${api_header_src}).${version_major}.${version_minor}"
     cp ${api_so_src} "${new_api_dir}lib"
+
+    # Remove writing permission for all API files so as to prevent them from being modified by third party entities.
+    chmod a-w "${new_api_dir}inc/$(basename ${api_header_src}).${version_major}.${version_minor}"
+    chmod a-w "${new_api_dir}lib"
 }
 
 #######################################################################################################################
