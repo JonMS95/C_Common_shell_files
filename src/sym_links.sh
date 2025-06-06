@@ -141,6 +141,17 @@ CreateSymLinks()
     local deps_dest=$(xmlstarlet sel -t -v "${deps_node}@Dest" $config_file)
     echo "Destination: $(pwd)/${deps_dest}"
 
+    local parse_is_sorted=$(xmlstarlet sel -t -v "${deps_node}@Sorted" $config_file)
+    local is_sorted=""
+    local -i sorted_dep_cnt=1
+
+    if [[ "$(echo "$parse_is_sorted" | tr '[:upper:]' '[:lower:]')" == "yes" ]]
+    then
+        is_sorted="yes"
+    else
+        is_sorted="no"
+    fi
+
     xmlstarlet el -a ${config_file} | grep ${deps_node} | grep -v "@" > ${path_deps_list}
     
     while read -r line
@@ -363,6 +374,13 @@ Type: ${dep_data["type"]}"
         while read -r line
         do
             lib_no_version=${line%%.so*}.so
+            
+            if [ "$is_sorted" == "yes" ]
+            then
+                lib_no_version="lib${sorted_dep_cnt}${lib_no_version#lib}"
+                ((sorted_dep_cnt++))
+            fi
+            
             echo "Creating symbolic link: ${deps_dest}/lib/${lib_no_version} -> $(readlink -f ${dep_SO_files_path}${line})"
             ln -sf "$(readlink -f ${dep_SO_files_path}${line})" "${deps_dest}/lib/${lib_no_version}"
         done < ${path_deps_files}
