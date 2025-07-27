@@ -356,7 +356,16 @@ Type: ${dep_data["type"]}"
         ls "${dep_header_files_path}" > ${path_deps_files}        
         while read -r line
         do
-            inc_no_version=${line%%.h*}.h
+            local inc_no_version=""
+            
+            if [[ "${line}" == *.hpp.* ]]
+            then
+                inc_no_version=${line%%.hpp*}.hpp
+            elif [[ "${line}" == *.h.* ]]
+            then
+                inc_no_version=${line%%.h*}.h
+            fi
+
             echo "Creating symbolic link: ${deps_dest}/inc/${inc_no_version} -> $(readlink -f ${dep_header_files_path}${line})"
             ln -sf "$(readlink -f ${dep_header_files_path}${line})" "${deps_dest}/inc/${inc_no_version}"
         done < ${path_deps_files}
