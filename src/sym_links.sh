@@ -220,9 +220,9 @@ Type: ${dep_data["type"]}"
                         echo "${dep_name} (${dep_data["package"]}) is already installed. No updates required."
                     fi
                 fi
-            fi
 
-            continue
+                continue
+            fi
         fi
 
         version_suffix=""
@@ -339,8 +339,8 @@ Type: ${dep_data["type"]}"
 
         if [ ${dep_data["type"]} == "data" ]
         then
-            echo "Creating symbolic link: ${deps_dest}/Data/$(basename ${dep_data["local_path"]}) -> ${dep_data["local_path"]}"
-            ln -sf "${dep_data["local_path"]}" "${deps_dest}/Data"
+            echo "Creating symbolic link: ${deps_dest}/data/$(basename ${dep_data["local_path"]}) -> ${dep_data["local_path"]}"
+            ln -sf "${dep_data["local_path"]}" "${deps_dest}/data"
             continue
         fi
 
