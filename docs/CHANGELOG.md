@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5] - 31-07-2025
+### Fixed
+- Corrected an error in sym_links.sh file that led data dependencies not to be downloaded nor linked properly.
+- C++ header files (.hpp) are now properly treated during symbolic link creation process.
+
+
 ## [1.4] - 06-06-2025
 ### Added
 - Dependencies can be sorted (if Sorted=="Yes" in target deps node) so that they follow the order in config.xml.
